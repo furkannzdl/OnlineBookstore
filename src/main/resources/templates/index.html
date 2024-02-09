@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Updated jQuery version -->
+</head>
+<style>
+    h1{
+        text-align: center;
+    }
+    p{
+        font-size: xx-large;
+    }
+    form{
+        text-align: end;
+    }
+
+    /* Flex container for the books */
+    .book-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between; /* Adjust spacing between books */
+    }
+
+    /* Style for each book */
+    .book {
+        width: 18%; /* Adjust width to fit five books per row */
+        margin-bottom: 100px; /* Add spacing between rows */
+        /* Additional styles for book display (e.g., borders, padding, etc.) */
+    }
+
+    .book img {
+        width: 100%; /* Limit image width to its container */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    /* Responsive layout adjustments */
+    @media screen and (max-width: 768px) {
+        .book {
+            width: 30%; /* Adjust width for smaller screens */
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        .book {
+            width: 48%; /* Adjust width for even smaller screens */
+        }
+    }
+</style>
+<body style="background-color: firebrick">
+
+<h1>Welcome to the Online Book Store!</h1>
+<!-- Signup form -->
+<form id="signupForm" style="display: none;">
+    <h2>Sign Up</h2>
+    <input type="text" id="signupUsername" required placeholder="Username">
+    <input type="password" id="signupPassword" required placeholder="Password">
+    <button type="submit">Sign Up</button>
+</form>
+
+<!-- Login form -->
+<form id="loginForm" style="display: none;">
+    <h2>Login</h2>
+    <input type="text" id="loginUsername" required placeholder="Username">
+    <input type="password" id="loginPassword" required placeholder="Password">
+    <button type="submit">Login</button>
+</form>
+
+<div id="loggedInUser" style="display: none;">
+    <h2>Welcome, <span id="username"></span>!</h2>
+    <button id="logoutButton">Logout</button>
+</div>
+<br>
+<form id="searchForm">
+    <input type="text" id="searchInput" required placeholder="Search for a book">
+    <button type="submit">Search</button>
+</form>
+
+<p>Our Books</p>
+<div class="book-container" id="bookContainer"> <!-- Added id attribute -->
+    <!-- Books will be dynamically added here -->
+</div>
+
+<div id="allBooks"></div>
+<script>
+    // Function to handle user signup
+    $('#signupForm').submit(function(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        // Implement signup logic here
+    });
+
+    // Function to check if the user is logged in and update the UI accordingly
+    // Function to check if the user is logged in and update the UI accordingly
+    // Function to check if the user is logged in and update the UI accordingly
+    function checkLoggedInStatus() {
+        $.ajax({
+            type: 'POST',
+            url: '/OnlineBookstore/users/checkLoggedIn',
+            success: function(response) {
+                if (response) {
+                    $('#signupForm').hide();
+                    $('#loginForm').hide();
+                    $('#loggedInUser').show();
+                    $('#username').text(response.username);
+                } else {
+                    $('#signupForm').show();
+                    $('#loginForm').show();
+                    $('#loggedInUser').hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error checking login status:', error);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Attach click event listener to the logout button
+        $('#logoutButton').click(function(event) {
+            event.preventDefault(); // Prevent default click behavior (if the button is inside a form)
+            $.ajax({
+                type: 'POST',
+                url: '/OnlineBookstore/users/logout',
+                success: function() {
+                    alert("Logged Out.");
+                    checkLoggedInStatus(); // Update UI after successful logout
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error logging out:', error);
+                }
+            });
+        });
+
+        // Call checkLoggedInStatus when the page loads
+        checkLoggedInStatus(); // Check and update the UI based on the user's login status
+    });
+
+
+
+
+    // Call checkLoggedInStatus when the page loads
+    $(document).ready(function() {
+        checkLoggedInStatus(); // Check and update the UI based on the user's login status
+    });
+    // Function to handle user signup
+    $('#signupForm').submit(function(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        var username = $('#signupUsername').val().trim();
+        var password = $('#signupPassword').val().trim();
+        if (username !== "" && password !== "") {
+            $.ajax({
+                type: 'POST',
+                url: '/OnlineBookstore/users/signup',
+                data: { username: username, password: password },
+                success: function(response) {
+                    alert('Signup successful!');
+                    $('#signupUsername').val(''); // Clear username field
+                    $('#signupPassword').val(''); // Clear password field
+                },
+                error: function(xhr, status, error) {
+                    alert('Error signing up. Please try again.');
+                    console.error('Error signing up:', error);
+                }
+            });
+        } else {
+            alert('Please enter both username and password.');
+        }
+    });
+
+    // Function to handle user login
+    $('#loginForm').submit(function(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        var username = $('#loginUsername').val().trim();
+        var password = $('#loginPassword').val().trim();
+        if (username !== "" && password !== "") {
+            $.ajax({
+                type: 'POST',
+                url: '/OnlineBookstore/users/login',
+                data: { username: username, password: password },
+                success: function(response) {
+                    alert('Login successful!');
+                    checkLoggedInStatus(); // Update UI after successful login
+                    $('#loginUsername').val(''); // Clear username field
+                    $('#loginPassword').val(''); // Clear password field
+                },
+                error: function(xhr, status, error) {
+                    alert('Invalid username or password. Please try again.');
+                    console.error('Error logging in:', error);
+                }
+            });
+        } else {
+            alert('Please enter both username and password.');
+        }
+    });
+    function searchBooks() {
+        var searchTerm = $('#searchInput').val().trim(); // Get search input value and trim any leading/trailing whitespace
+        console.log("Search Term: ", searchTerm);
+        if (searchTerm !== "") { // Check if search term is not empty
+            $.ajax({
+                type: 'GET',
+                url: "/OnlineBookstore/searchbook?title=" + encodeURIComponent(searchTerm), // Endpoint to search books
+                success: function(response) {
+                    console.log("Search Response:", response); // Log the entire response object
+
+                    if (response !== null && response.id !== undefined) { // Check if response is not null and contains an ID
+                        var bookId = response.id; // Get the ID of the book from the response
+                        console.log("Book ID:", bookId); // Log the book ID
+                        showBookDetails(bookId); // Call showBookDetails function with the book ID
+                    } else {
+                        console.error('Book not found for search term:', searchTerm);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    window.location.href = 'search-unsuccessful.html';
+                    console.error('Error searching books:', error);
+                }
+            });
+        }
+        return false; // Prevent form from submitting
+    }
+
+    // Event listener for the search form submission
+    $('#searchForm').submit(function(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        searchBooks(); // Call searchBooks function
+    });
+
+
+    // Function to fetch books from the backend
+    function getAllBooks() {
+        $.ajax({
+            type: 'GET',
+            url: "OnlineBookstore/books", // Endpoint to fetch books from the backend
+            success: function(response) {
+                console.log(response)
+                displayBooks(response); // Display the fetched books
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching books:', error);
+            }
+        });
+        return false; // Prevent form from submitting
+    }
+
+    // Function to display books
+    function displayBooks(books) {
+        var bookContainer = $('#bookContainer'); // Selecting the container by ID
+        bookContainer.empty(); // Clear previous content
+
+        books.forEach(function(book) {
+            var bookHtml = '<div class="book">' +
+                '<img src="book.jpg" alt="Book Placeholder" onclick="showBookDetails(' + book.id + ')">' + // Pass book ID as argument
+                '<p>Title: ' + book.title + '</p>' +
+                '<p>Author: ' + book.author + '</p>' +
+                '</div>';
+            bookContainer.append(bookHtml);
+        });
+    }
+
+
+    // Function to show book details and navigate to new page
+    // Function to show book details and navigate to new page
+    function showBookDetails(id) {
+        // Construct the URL with book details as parameters
+        var url = 'book-details.html?id=' + encodeURIComponent(id);
+
+        // Redirect to the new page
+        window.location.href = url;
+    }
+
+    // Call the getAllBooks function when the page loads
+    $(document).ready(function() {
+        getAllBooks(); // Fetch and display books when the page loads
+    });
+
+
+
+</script>
+
+</body>
+</html>
