@@ -20,4 +20,10 @@ This project is an online bookstore system built using Java, Spring Boot framewo
 - Log in: Log in with your username and password to access additional features.
 
 
-Used thymeleaf, MySQL driver, 
+##  Dependicies
+
+Java Spring Boot for the backend.
+Spring MVC for handling web requests.
+Spring Data JPA for database interactions.
+Thymeleaf for the frontend.
+MySQL for the database
